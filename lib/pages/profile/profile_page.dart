@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../const/app_const.dart';
+import '../../utils/app_navigator.dart';
 import '../home/home_models.dart';
 import '../home/widgets/card_image.dart';
+import '../onboarding/login_page.dart';
 import 'profile_models.dart';
 
 /// Account / Profile tab — matches the Figma reference. Static mock data
@@ -18,6 +20,30 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _tenantsExpanded = true;
 
   void _noop() {}
+
+  /// Sign out → confirm, then clear the stack back to the login screen.
+  Future<void> _signOut() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Sign out?'),
+        content: const Text('You will need to sign in again to continue.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: AppConst.errorColor),
+            child: const Text('Sign out'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+    AppNavigator.replaceAll(context, const LoginPage());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +98,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   const SizedBox(height: 20),
                   Center(
                     child: GestureDetector(
-                      onTap: _noop,
+                      onTap: _signOut,
                       behavior: HitTestBehavior.opaque,
                       child: Text('Sign out',
                           style: AppConst.body.copyWith(
